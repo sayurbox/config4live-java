@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.sayurbox.config4live'
-version '1.0.0'
+version '1.0.2-rc1'
 
 repositories {
     maven {
@@ -16,6 +16,17 @@ repositories {
 def grpcVersion = '1.32.1'
 def protobufVersion = '3.12.0'
 def protocVersion = '3.12.0'
+
+def mainClassName = "com.sayurbox.config4live.ConfigurationProvider"
+
+jar {
+    manifest {
+        attributes "Main-Class": "$mainClassName"
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
 
 dependencies {
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
