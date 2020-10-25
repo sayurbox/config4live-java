@@ -5,7 +5,7 @@ import com.netflix.hystrix.HystrixCommandProperties;
 import com.sayurbox.config4live.Config;
 import com.sayurbox.config4live.param.HystrixParams;
 
-public abstract class ServiceCommand<T> extends HystrixCommand<Config> implements AutoCloseable {
+public abstract class ServiceCommand<T> extends HystrixCommand<Config> {
 
     protected final String configKey;
 

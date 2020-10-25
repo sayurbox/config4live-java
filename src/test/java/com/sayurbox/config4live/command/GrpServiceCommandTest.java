@@ -12,7 +12,6 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.grpc.testing.GrpcCleanupRule;
 import org.junit.*;
-import org.powermock.reflect.Whitebox;
 
 import java.io.IOException;
 
@@ -34,13 +33,6 @@ public class GrpServiceCommandTest {
         serverName = InProcessServerBuilder.generateName();
     }
 
-    @After
-    public void after() {
-        if (command != null) {
-            command.close();
-        }
-    }
-
     @Test
     public void getConfig_Found() throws Exception {
         prepareMessageChannel(serverName, new LiveConfigurationGrpc.LiveConfigurationImplBase() {
@@ -53,10 +45,7 @@ public class GrpServiceCommandTest {
             }
         });
 
-        command = new GrpServiceCommand(serverName, "default_wh", provideHystrixParam());
-        Whitebox.setInternalState(command, "channel", channel);
-        Whitebox.setInternalState(command, "liveConfigStub", liveConfigStub);
-
+        command = new GrpServiceCommand(channel, liveConfigStub, "default_wh", provideHystrixParam());
         Config actual = command.run();
         Assert.assertNotNull(actual);
         Assert.assertEquals("resultValue", actual.getValue());
@@ -70,10 +59,7 @@ public class GrpServiceCommandTest {
                 responseObserver.onError(Status.NOT_FOUND.withDescription("not found").asRuntimeException());
             }
         });
-        command = new GrpServiceCommand(serverName, "default_wh", provideHystrixParam());
-        Whitebox.setInternalState(command, "channel", channel);
-        Whitebox.setInternalState(command, "liveConfigStub", liveConfigStub);
-
+        command = new GrpServiceCommand(channel, liveConfigStub, "default_wh", provideHystrixParam());
         Config actual = command.run();
         Assert.assertNull(actual);
     }
@@ -87,10 +73,7 @@ public class GrpServiceCommandTest {
             }
         });
         HystrixParams hystrixParams = new HystrixParams(1000, 400, 10, 500);
-        command = new GrpServiceCommand(serverName, "default_wh", hystrixParams);
-        Whitebox.setInternalState(command, "channel", channel);
-        Whitebox.setInternalState(command, "liveConfigStub", liveConfigStub);
-
+        command = new GrpServiceCommand(channel, liveConfigStub, "default_wh", hystrixParams);
         Config actual = command.run();
         Assert.assertNull(actual);
     }

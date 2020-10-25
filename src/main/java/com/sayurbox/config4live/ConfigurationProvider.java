@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import static java.util.Objects.requireNonNull;
+
 public class ConfigurationProvider {
 
     private final ConfigurationSource source;
@@ -20,7 +22,7 @@ public class ConfigurationProvider {
     public ConfigurationProvider(ConfigurationSource source, Boolean cacheable, Integer cacheTtl) {
         this.gson = new Gson();
         this.cacheable = cacheable;
-        this.source = source;
+        this.source = requireNonNull(source);
         this.configCache = CacheBuilder.newBuilder()
                 .maximumSize(1000)
                 .expireAfterWrite(cacheTtl, TimeUnit.SECONDS)

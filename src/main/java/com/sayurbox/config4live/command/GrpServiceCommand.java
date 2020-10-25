@@ -12,8 +12,6 @@ import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.TimeUnit;
-
 public class GrpServiceCommand extends ServiceCommand<ConfigResponse> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GrpServiceCommand.class);
@@ -25,6 +23,13 @@ public class GrpServiceCommand extends ServiceCommand<ConfigResponse> {
         super(configKey, params);
         channel = ManagedChannelBuilder.forTarget(url).usePlaintext().build();
         liveConfigStub = LiveConfigurationGrpc.newBlockingStub(channel);
+    }
+
+    public GrpServiceCommand(ManagedChannel channel, LiveConfigurationGrpc.LiveConfigurationBlockingStub stub,
+                             String configKey, HystrixParams params) {
+        super(configKey, params);
+        this.channel = channel;
+        this.liveConfigStub = stub;
     }
 
     @Override
@@ -41,6 +46,7 @@ public class GrpServiceCommand extends ServiceCommand<ConfigResponse> {
     @Override
     protected Config getFallback() {
         LOGGER.warn("grpc command {} fallback is executed", configKey);
+        System.out.println("fallback Executed");
         return null;
     }
 
@@ -53,15 +59,4 @@ public class GrpServiceCommand extends ServiceCommand<ConfigResponse> {
         return config;
     }
 
-    @Override
-    public void close() {
-        try {
-            if (!channel.isShutdown()) {
-                channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
-                LOGGER.info("channel is closed successfully");
-            }
-        } catch (InterruptedException e) {
-            LOGGER.error("failed to shutdown channel");
-        }
-    }
 }

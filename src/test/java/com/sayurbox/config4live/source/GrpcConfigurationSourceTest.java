@@ -32,7 +32,7 @@ public class GrpcConfigurationSourceTest {
         config.setName("test");
         config.setValue("test");
         doReturn(config).when(command).execute();
-        GrpcConfigurationSource src = new GrpcConfigurationSource("config_test", provideHystrixParam());
+        GrpcConfigurationSource src = new GrpcConfigurationSource("config.server:5555", provideHystrixParam());
         Config actual = src.getProperty("key");
         Assert.assertNotNull(actual);
         Assert.assertEquals("test", actual.getValue());
@@ -41,7 +41,7 @@ public class GrpcConfigurationSourceTest {
     @Test
     public void getProperty_NotFound() throws Exception {
         doReturn(null).when(command).execute();
-        GrpcConfigurationSource src = new GrpcConfigurationSource("config_test", provideHystrixParam());
+        GrpcConfigurationSource src = new GrpcConfigurationSource("config.server:5555", provideHystrixParam());
         Config actual = src.getProperty("key");
         Assert.assertNull(actual);
     }

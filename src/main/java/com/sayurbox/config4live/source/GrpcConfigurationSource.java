@@ -1,29 +1,35 @@
 package com.sayurbox.config4live.source;
 
 import com.sayurbox.config4live.Config;
+import com.sayurbox.config4live.LiveConfigurationGrpc;
 import com.sayurbox.config4live.command.GrpServiceCommand;
 import com.sayurbox.config4live.param.HystrixParams;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.Objects.requireNonNull;
 
 public class GrpcConfigurationSource implements ConfigurationSource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GrpcConfigurationSource.class);
 
-    private final String grpcUrl;
     private final HystrixParams hystrixParams;
+    private final LiveConfigurationGrpc.LiveConfigurationBlockingStub liveConfigStub;
+    private final ManagedChannel channel;
 
     public GrpcConfigurationSource(String url, HystrixParams hystrixParams) {
-        this.grpcUrl = url;
         this.hystrixParams = hystrixParams;
+        this.channel = ManagedChannelBuilder.forTarget(requireNonNull(url)).usePlaintext().build();
+        this.liveConfigStub = LiveConfigurationGrpc.newBlockingStub(channel);
     }
 
     @Override
     public Config getProperty(String key) {
         LOGGER.debug("get property {} from grpc source", key);
-        try (GrpServiceCommand cmd = new GrpServiceCommand(grpcUrl, key, hystrixParams)) {
-            return cmd.execute();
-        }
+        GrpServiceCommand cmd = new GrpServiceCommand(channel, liveConfigStub, key, hystrixParams);
+        return cmd.execute();
     }
 
     public static class Builder {
