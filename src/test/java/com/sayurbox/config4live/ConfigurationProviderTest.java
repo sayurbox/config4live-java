@@ -30,6 +30,7 @@ public class ConfigurationProviderTest {
                                 return key.toUpperCase();
                             }
                 });
+        caches.cleanUp();
     }
 
     @Test
@@ -163,6 +164,18 @@ public class ConfigurationProviderTest {
     }
 
     @Test
+    public void bind_String_FoundAndCached() {
+        ConfigurationProvider provider = new ConfigurationProvider(configurationSource, true, 10);
+        Config config = new Config();
+        config.setValue("text query");
+        config.setName("test_string");
+        Whitebox.setInternalState(provider, "configCache", caches);
+        when(configurationSource.getProperty("test_string")).thenReturn(config);
+        String actual = provider.bind("test_string", "test default");
+        Assert.assertEquals("text query", actual);
+    }
+
+    @Test
     public void bind_String_FormCache() {
         ConfigurationProvider provider = new ConfigurationProvider(configurationSource, true, 100);
         caches.put("test_string", "text query");
@@ -202,6 +215,17 @@ public class ConfigurationProviderTest {
         Assert.assertEquals(2, (int) actual.id);
         Assert.assertEquals("john doe", actual.name);
         verify(configurationSource, never()).getProperty("test_bean");
+    }
+
+    @Test
+    public void providerWithBuilder() {
+        ConfigurationProvider provider = new ConfigurationProvider.Builder().withSource(configurationSource)
+                .withCache(false).withTimeToLive(0).build();
+        Config config = new Config();
+        config.setValue("text query");
+        when(configurationSource.getProperty("test_string")).thenReturn(config);
+        String actual = provider.bind("test_string", "test default");
+        Assert.assertEquals("text query", actual);
     }
 
     static class Person {

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'eclipse'
     id 'com.google.protobuf' version '0.8.8'
 }
 
@@ -7,6 +8,9 @@ group 'com.sayurbox.config4live'
 version '1.0.2-rc1'
 
 apply plugin: 'jacoco'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 repositories {
     maven {
@@ -69,10 +73,23 @@ sourceSets {
 }
 
 jacocoTestReport {
+    dependsOn test
     reports {
         xml.enabled true
         html.enabled true
     }
+    afterEvaluate {
+        // exclude generated proto
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/LiveConfigurationGrpc**',
+                    '**/LiveConfigurationProto**',
+                    '**/ConfigRequest**',
+                    '**/ConfigResponse**'
+            ])
+        }))
+    }
 }
 
 check.dependsOn jacocoTestReport
+

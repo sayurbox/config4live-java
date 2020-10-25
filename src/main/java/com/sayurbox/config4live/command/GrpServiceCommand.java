@@ -6,8 +6,6 @@ import com.sayurbox.config4live.ConfigResponse;
 import com.sayurbox.config4live.FormatType;
 import com.sayurbox.config4live.LiveConfigurationGrpc;
 import com.sayurbox.config4live.param.HystrixParams;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,18 +15,10 @@ public class GrpServiceCommand extends ServiceCommand<ConfigResponse> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GrpServiceCommand.class);
 
     private final LiveConfigurationGrpc.LiveConfigurationBlockingStub liveConfigStub;
-    private final ManagedChannel channel;
 
-    public GrpServiceCommand(String url, String configKey, HystrixParams params) {
-        super(configKey, params);
-        channel = ManagedChannelBuilder.forTarget(url).usePlaintext().build();
-        liveConfigStub = LiveConfigurationGrpc.newBlockingStub(channel);
-    }
-
-    public GrpServiceCommand(ManagedChannel channel, LiveConfigurationGrpc.LiveConfigurationBlockingStub stub,
+    public GrpServiceCommand(LiveConfigurationGrpc.LiveConfigurationBlockingStub stub,
                              String configKey, HystrixParams params) {
         super(configKey, params);
-        this.channel = channel;
         this.liveConfigStub = stub;
     }
 

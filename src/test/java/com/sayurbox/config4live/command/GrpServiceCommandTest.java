@@ -39,16 +39,18 @@ public class GrpServiceCommandTest {
             @Override
             public void findConfig(ConfigRequest request, StreamObserver<ConfigResponse> responseObserver) {
                 ConfigResponse rs = ConfigResponse.newBuilder().setName("result").setValue("resultValue")
-                        .setDescription("desc").build();
+                        .setFormat(ConfigResponse.Format.text).setDescription("desc").build();
                 responseObserver.onNext(rs);
                 responseObserver.onCompleted();
             }
         });
 
-        command = new GrpServiceCommand(channel, liveConfigStub, "default_wh", provideHystrixParam());
+        command = new GrpServiceCommand(liveConfigStub, "default_wh", provideHystrixParam());
         Config actual = command.run();
         Assert.assertNotNull(actual);
         Assert.assertEquals("resultValue", actual.getValue());
+        Assert.assertEquals("result", actual.getName());
+        Assert.assertEquals("text", actual.getFormat().name());
     }
 
     @Test
@@ -59,7 +61,7 @@ public class GrpServiceCommandTest {
                 responseObserver.onError(Status.NOT_FOUND.withDescription("not found").asRuntimeException());
             }
         });
-        command = new GrpServiceCommand(channel, liveConfigStub, "default_wh", provideHystrixParam());
+        command = new GrpServiceCommand(liveConfigStub, "default_wh", provideHystrixParam());
         Config actual = command.run();
         Assert.assertNull(actual);
     }
@@ -73,8 +75,31 @@ public class GrpServiceCommandTest {
             }
         });
         HystrixParams hystrixParams = new HystrixParams(1000, 400, 10, 500);
-        command = new GrpServiceCommand(channel, liveConfigStub, "default_wh", hystrixParams);
+        command = new GrpServiceCommand(liveConfigStub, "default_wh", hystrixParams);
         Config actual = command.run();
+        Assert.assertNull(actual);
+    }
+
+    @Test
+    public void getConfig_TimeoutShouldFallback() throws Exception {
+        prepareMessageChannel(serverName, new LiveConfigurationGrpc.LiveConfigurationImplBase() {
+            @Override
+            public void findConfig(ConfigRequest request, StreamObserver<ConfigResponse> responseObserver) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    responseObserver.onError(Status.UNKNOWN.withCause(e).asRuntimeException());
+                }
+                ConfigResponse rs = ConfigResponse.newBuilder().setName("result").setValue("resultValue")
+                        .setFormat(ConfigResponse.Format.text).setDescription("desc").build();
+                responseObserver.onNext(rs);
+                responseObserver.onCompleted();
+            }
+        });
+
+        HystrixParams hystrixParams = new HystrixParams(400, 400, 10, 500);
+        command = new GrpServiceCommand(liveConfigStub, "default_wh", hystrixParams);
+        Config actual = command.execute();
         Assert.assertNull(actual);
     }
 

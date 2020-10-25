@@ -1,52 +1,81 @@
 package com.sayurbox.config4live.source;
 
 import com.sayurbox.config4live.Config;
-import com.sayurbox.config4live.command.GrpServiceCommand;
-import com.sayurbox.config4live.param.HystrixParams;
+import com.sayurbox.config4live.ConfigRequest;
+import com.sayurbox.config4live.ConfigResponse;
+import com.sayurbox.config4live.LiveConfigurationGrpc;
+import io.grpc.ManagedChannel;
+import io.grpc.Status;
+import io.grpc.inprocess.InProcessChannelBuilder;
+import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.stub.StreamObserver;
+import io.grpc.testing.GrpcCleanupRule;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.Mockito;
+import org.powermock.reflect.Whitebox;
 
-import static org.powermock.api.mockito.PowerMockito.doReturn;
-import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.mockito.AdditionalAnswers.delegatesTo;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ GrpcConfigurationSource.class })
+
 public class GrpcConfigurationSourceTest {
 
-    private GrpServiceCommand command;
+    @Rule
+    public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
+    private String serverName = "server.config:5555";
+    private LiveConfigurationGrpc.LiveConfigurationBlockingStub liveConfigStub;
 
     @Before
     public void before() throws Exception {
-        command = mock(GrpServiceCommand.class);
-        PowerMockito.whenNew(GrpServiceCommand.class).withAnyArguments().thenReturn(command);
+        LiveConfigurationGrpc.LiveConfigurationImplBase serviceImpl =
+                Mockito.mock(LiveConfigurationGrpc.LiveConfigurationImplBase.class,
+                        delegatesTo(new LiveConfigurationGrpc.LiveConfigurationImplBase(){
+                            @Override
+                            public void findConfig(ConfigRequest request,
+                                                   StreamObserver<ConfigResponse> responseObserver) {
+                                if (request.getName().equals("active_config")) {
+                                    ConfigResponse response = ConfigResponse.newBuilder().setName("active_config")
+                                            .setValue("test value").build();
+                                    responseObserver.onNext(response);
+                                    responseObserver.onCompleted();
+                                } else {
+                                    responseObserver.onError(Status.NOT_FOUND.withDescription("not found")
+                                            .asException());
+                                }
+                            }
+                        }));
+        grpcCleanup.register(InProcessServerBuilder
+                .forName(serverName).directExecutor().addService(serviceImpl).build().start());
+        ManagedChannel channel = grpcCleanup.register(
+                InProcessChannelBuilder.forName(serverName).directExecutor().build());
+        liveConfigStub = LiveConfigurationGrpc.newBlockingStub(channel);
     }
 
     @Test
-    public void getProperty_Found() throws Exception {
-        Config config = new Config();
-        config.setName("test");
-        config.setValue("test");
-        doReturn(config).when(command).execute();
-        GrpcConfigurationSource src = new GrpcConfigurationSource("config.server:5555", provideHystrixParam());
-        Config actual = src.getProperty("key");
-        Assert.assertNotNull(actual);
-        Assert.assertEquals("test", actual.getValue());
-    }
-
-    @Test
-    public void getProperty_NotFound() throws Exception {
-        doReturn(null).when(command).execute();
-        GrpcConfigurationSource src = new GrpcConfigurationSource("config.server:5555", provideHystrixParam());
-        Config actual = src.getProperty("key");
+    public void getProperty_NotFound() {
+        GrpcConfigurationSource src = new GrpcConfigurationSource.Builder().withGrpcUrl(serverName)
+                .withHystrixExecutionTimeout(1000)
+                .withHystrixCircuitBreakerSleepWindow(300)
+                .withHystrixCircuitBreakerRequestVolumeThreshold(10)
+                .withHystrixRollingStatisticalWindow(500).build();
+        Whitebox.setInternalState(src, "liveConfigStub", liveConfigStub);
+        Config actual = src.getProperty("unknown");
         Assert.assertNull(actual);
     }
 
-    private HystrixParams provideHystrixParam() {
-        return new HystrixParams(1000, 400, 10, 500);
+    @Test
+    public void getProperty_Found() {
+        GrpcConfigurationSource src = new GrpcConfigurationSource.Builder().withGrpcUrl(serverName)
+                .withHystrixExecutionTimeout(1000)
+                .withHystrixCircuitBreakerSleepWindow(300)
+                .withHystrixCircuitBreakerRequestVolumeThreshold(10)
+                .withHystrixRollingStatisticalWindow(500).build();
+        Whitebox.setInternalState(src, "liveConfigStub", liveConfigStub);
+        Config actual = src.getProperty("active_config");
+        Assert.assertNotNull(actual);
+        Assert.assertEquals("test value", actual.getValue());
     }
+
 }

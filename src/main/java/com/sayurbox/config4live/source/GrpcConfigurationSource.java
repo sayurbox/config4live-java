@@ -28,7 +28,7 @@ public class GrpcConfigurationSource implements ConfigurationSource {
     @Override
     public Config getProperty(String key) {
         LOGGER.debug("get property {} from grpc source", key);
-        GrpServiceCommand cmd = new GrpServiceCommand(channel, liveConfigStub, key, hystrixParams);
+        GrpServiceCommand cmd = new GrpServiceCommand(liveConfigStub, key, hystrixParams);
         return cmd.execute();
     }
 

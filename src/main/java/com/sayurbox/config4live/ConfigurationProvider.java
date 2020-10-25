@@ -77,7 +77,7 @@ public class ConfigurationProvider {
             return null;
         }
         if (cacheable) {
-            configCache.put(key, config.getValue());
+            configCache.put(config.getName(), config.getValue());
         }
         return config.getValue();
     }

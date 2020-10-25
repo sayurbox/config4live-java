@@ -71,7 +71,7 @@ public class ServiceCommandTest {
 
     @Test
     public void serviceCommand_TimeoutShouldGetFallback() {
-        HystrixParams params = provideHystrixParam(500);
+        HystrixParams params = provideHystrixParam(100);
         runMethod = () -> {
             try {
                 Thread.sleep(1000);
