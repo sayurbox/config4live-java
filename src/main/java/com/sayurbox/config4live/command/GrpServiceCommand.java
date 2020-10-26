@@ -36,7 +36,6 @@ public class GrpServiceCommand extends ServiceCommand<ConfigResponse> {
     @Override
     protected Config getFallback() {
         LOGGER.warn("grpc command {} fallback is executed", configKey);
-        System.out.println("fallback Executed");
         return null;
     }
 
