@@ -1,6 +1,6 @@
 
 # Config4live-java
-Centralized live **configuration library for Java**. for microservice or distributed system.
+Centralized live **configuration library for nodejs**. for microservice or distributed system.
 Inspired from [https://github.com/cfg4j/cfg4j](https://github.com/cfg4j/cfg4j)
 
 ## Features
