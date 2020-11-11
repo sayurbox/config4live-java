@@ -62,6 +62,34 @@ public class ConfigurationProviderTest {
     }
 
     @Test
+    public void bind_Long_NotFound_GetDefault() {
+        ConfigurationProvider provider = new ConfigurationProvider(configurationSource, false, 0);
+        when(configurationSource.getProperty("test_config_long")).thenReturn(null);
+        Long actual = provider.bind("test_config_long", 6L);
+        Assert.assertEquals(6, actual.longValue());
+    }
+
+    @Test
+    public void bind_Long_Found() {
+        ConfigurationProvider provider = new ConfigurationProvider(configurationSource, false, 0);
+        Config config = new Config();
+        config.setValue("12");
+        when(configurationSource.getProperty("test_config_long")).thenReturn(config);
+        Long actual = provider.bind("test_config_long", 13L);
+        Assert.assertEquals(12, actual.longValue());
+    }
+
+    @Test
+    public void bind_Long_FormCache() {
+        ConfigurationProvider provider = new ConfigurationProvider(configurationSource, true, 100);
+        caches.put("test_config_long", "8");
+        Whitebox.setInternalState(provider, "configCache", caches);
+        Long actual = provider.bind("test_config_long", 10L);
+        Assert.assertEquals(8, actual.longValue());
+        verify(configurationSource, never()).getProperty("test_config_long");
+    }
+
+    @Test
     public void bind_Boolean_NotFound_GetDefault() {
         ConfigurationProvider provider = new ConfigurationProvider(configurationSource, false, 0);
         when(configurationSource.getProperty("test_bool")).thenReturn(null);

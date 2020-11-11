@@ -38,6 +38,10 @@ public class ConfigurationProvider {
         return getValueOrDefault(requestProperty(key), defaultValue, Integer::parseInt);
     }
 
+    public Long bind(String key, Long defaultValue) {
+        return getValueOrDefault(requestProperty(key), defaultValue, Long::parseLong);
+    }
+
     public Boolean bind(String key, Boolean defaultValue) {
         return getValueOrDefault(requestProperty(key), defaultValue, Boolean::valueOf);
     }
