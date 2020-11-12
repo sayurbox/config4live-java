@@ -38,7 +38,7 @@ public class GrpcConfigurationSource implements ConfigurationSource {
         private Integer hystrixExecutionTimeout = 1000;
         private Integer hystrixCircuitBreakerSleepWindow = 1000;
         private Integer hystrixCircuitBreakerRequestVolumeThreshold = 10;
-        private Integer hystrixRollingStatisticalWindow = 1000;
+        private Integer hystrixRollingStatisticalWindow = 10000;
         private Integer hystrixHealthSnapshotInterval = 500;
 
         public Builder() {

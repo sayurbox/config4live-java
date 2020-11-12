@@ -81,6 +81,7 @@ ConfigurationSource source = new GrpcConfigurationSource.Builder()
                 .withHystrixCircuitBreakerSleepWindow(500)
                 .withHystrixCircuitBreakerRequestVolumeThreshold(10)
                 .withHystrixRollingStatisticalWindow(500)
+                .withHystrixHealthSnapshotInterval(500)
                 .build();
 ConfigurationProvider provider = new ConfigurationProvider.Builder().withSource(source)
                 .withCache(true)
