@@ -39,6 +39,7 @@ public class GrpcConfigurationSource implements ConfigurationSource {
         private Integer hystrixCircuitBreakerSleepWindow = 1000;
         private Integer hystrixCircuitBreakerRequestVolumeThreshold = 10;
         private Integer hystrixRollingStatisticalWindow = 1000;
+        private Integer hystrixHealthSnapshotInterval = 500;
 
         public Builder() {
         }
@@ -69,10 +70,15 @@ public class GrpcConfigurationSource implements ConfigurationSource {
             return this;
         }
 
+        public Builder withHystrixHealthSnapshotInterval(int hystrixHealthSnapshotInterval) {
+            this.hystrixHealthSnapshotInterval = hystrixHealthSnapshotInterval;
+            return this;
+        }
+
         public GrpcConfigurationSource build() {
             HystrixParams hystrixParams = new HystrixParams(hystrixExecutionTimeout,
                     hystrixCircuitBreakerSleepWindow, hystrixCircuitBreakerRequestVolumeThreshold,
-                    hystrixRollingStatisticalWindow);
+                    hystrixRollingStatisticalWindow, hystrixHealthSnapshotInterval);
             return new GrpcConfigurationSource(grpcUrl, hystrixParams);
         }
     }

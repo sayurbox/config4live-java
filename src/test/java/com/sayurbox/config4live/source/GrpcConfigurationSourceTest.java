@@ -59,7 +59,8 @@ public class GrpcConfigurationSourceTest {
                 .withHystrixExecutionTimeout(1000)
                 .withHystrixCircuitBreakerSleepWindow(300)
                 .withHystrixCircuitBreakerRequestVolumeThreshold(10)
-                .withHystrixRollingStatisticalWindow(500).build();
+                .withHystrixRollingStatisticalWindow(500)
+                .withHystrixHealthSnapshotInterval(500).build();
         Whitebox.setInternalState(src, "liveConfigStub", liveConfigStub);
         Config actual = src.getProperty("unknown");
         Assert.assertNull(actual);
@@ -71,7 +72,9 @@ public class GrpcConfigurationSourceTest {
                 .withHystrixExecutionTimeout(1000)
                 .withHystrixCircuitBreakerSleepWindow(300)
                 .withHystrixCircuitBreakerRequestVolumeThreshold(10)
-                .withHystrixRollingStatisticalWindow(500).build();
+                .withHystrixRollingStatisticalWindow(500)
+                .withHystrixHealthSnapshotInterval(500).build();
+
         Whitebox.setInternalState(src, "liveConfigStub", liveConfigStub);
         Config actual = src.getProperty("active_config");
         Assert.assertNotNull(actual);

@@ -87,7 +87,7 @@ public class ServiceCommandTest {
     }
 
     private HystrixParams provideHystrixParam(int timeout) {
-        return new HystrixParams(timeout, 400, 10, 500);
+        return new HystrixParams(timeout, 400, 10, 500, 500);
     }
 
 }

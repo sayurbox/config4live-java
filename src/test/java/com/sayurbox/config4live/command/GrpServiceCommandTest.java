@@ -74,7 +74,7 @@ public class GrpServiceCommandTest {
                 throw new RuntimeException("unknown exception");
             }
         });
-        HystrixParams hystrixParams = new HystrixParams(1000, 400, 10, 500);
+        HystrixParams hystrixParams = new HystrixParams(1000, 400, 10, 500, 500);
         command = new GrpServiceCommand(liveConfigStub, "default_wh", hystrixParams);
         Config actual = command.run();
         Assert.assertNull(actual);
@@ -97,7 +97,7 @@ public class GrpServiceCommandTest {
             }
         });
 
-        HystrixParams hystrixParams = new HystrixParams(400, 400, 10, 500);
+        HystrixParams hystrixParams = new HystrixParams(400, 400, 10, 500, 500);
         command = new GrpServiceCommand(liveConfigStub, "default_wh", hystrixParams);
         Config actual = command.execute();
         Assert.assertNull(actual);
@@ -115,6 +115,6 @@ public class GrpServiceCommandTest {
     }
 
     private HystrixParams provideHystrixParam() {
-        return new HystrixParams(1000, 400, 10, 500);
+        return new HystrixParams(1000, 400, 10, 500, 500);
     }
 }

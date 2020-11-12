@@ -8,13 +8,16 @@ public class HystrixParams {
     private final Integer circuitBreakerSleepWindow;
     private final Integer circuitBreakerRequestVolumeThreshold;
     private final Integer metricRollingStatisticalWindow;
+    private final Integer metricsHealthSnapshotInterval;
 
     public HystrixParams(Integer executionTimeout, Integer circuitBreakerSleepWindow,
-                         Integer circuitBreakerRequestVolumeThreshold, Integer metricRollingStatisticalWindow) {
+                         Integer circuitBreakerRequestVolumeThreshold, Integer metricRollingStatisticalWindow,
+                         Integer metricsHealthSnapshotInterval) {
         this.executionTimeout = executionTimeout;
         this.circuitBreakerSleepWindow = circuitBreakerSleepWindow;
         this.circuitBreakerRequestVolumeThreshold = circuitBreakerRequestVolumeThreshold;
         this.metricRollingStatisticalWindow = metricRollingStatisticalWindow;
+        this.metricsHealthSnapshotInterval = metricsHealthSnapshotInterval;
     }
 
     public Integer getExecutionTimeout() {
@@ -31,6 +34,10 @@ public class HystrixParams {
 
     public Integer getMetricRollingStatisticalWindow() {
         return metricRollingStatisticalWindow;
+    }
+
+    public Integer getMetricsHealthSnapshotInterval() {
+        return metricsHealthSnapshotInterval;
     }
 
     public HystrixCommandGroupKey getHystrixCommandGroupKey() {

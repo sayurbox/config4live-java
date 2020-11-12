@@ -23,6 +23,7 @@ public abstract class ServiceCommand<T> extends HystrixCommand<Config> {
         properties.withCircuitBreakerEnabled(true);
         properties.withCircuitBreakerRequestVolumeThreshold(params.getCircuitBreakerRequestVolumeThreshold());
         properties.withMetricsRollingStatisticalWindowInMilliseconds(params.getMetricRollingStatisticalWindow());
+        properties.withMetricsHealthSnapshotIntervalInMilliseconds(params.getMetricsHealthSnapshotInterval());
         config.andCommandPropertiesDefaults(properties);
         return config;
     }

@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.sayurbox.config4live'
-version '1.0.2-rc1'
+version '1.0.4-rc'
 
 apply plugin: 'jacoco'
 
