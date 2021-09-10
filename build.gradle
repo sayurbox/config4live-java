@@ -42,6 +42,7 @@ dependencies {
     testImplementation "io.grpc:grpc-testing:${grpcVersion}"
     implementation "com.netflix.hystrix:hystrix-core:1.5.18"
     implementation "org.slf4j:slf4j-api:1.7.25"
+    implementation "com.squareup.okhttp3:okhttp:3.14.6"
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation "org.mockito:mockito-core:2.28.2"
     testImplementation "org.powermock:powermock-api-mockito2:2.0.5"
