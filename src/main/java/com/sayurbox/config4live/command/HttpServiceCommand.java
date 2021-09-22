@@ -41,12 +41,10 @@ public class HttpServiceCommand extends ServiceCommand<ConfigurationResponse> {
         Response response = null;
         try {
             LOGGER.debug("requesting live-config: {}", request.url());
-            System.out.println("requesting live-config: "+ request.url());
             response = okHttpClient.newCall(request).execute();
             return handleResponse(response);
         } catch (Exception e) {
             LOGGER.error("failed request from live-config, ", e);
-            System.out.println("failed request from live-config, "+ e);
             return null;
         } finally {
             if (response != null && response.body() != null) {
@@ -67,7 +65,6 @@ public class HttpServiceCommand extends ServiceCommand<ConfigurationResponse> {
     protected ConfigurationResponse handleResponse(Response response) throws Exception {
         String body = response.body().string();
         LOGGER.debug("get live-config response: {}", body);
-        System.out.println("get live-config response: "+ body);
         if (!response.isSuccessful()) {
             LOGGER.error("Failed response from live-config: {} body {}", response.code(),
                     response.body().string());
