@@ -12,3 +12,4 @@ build/*
 .classpath
 .vscode/
 */logs/*
+.DS_Store

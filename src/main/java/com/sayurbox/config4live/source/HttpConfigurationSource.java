@@ -38,7 +38,7 @@ public class HttpConfigurationSource implements ConfigurationSource {
 
         public Builder() {}
 
-        public Builder withUrl (String url) {
+        public Builder withUrl(String url) {
             httpUrl = url;
             return this;
         }

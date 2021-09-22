@@ -1,5 +1,7 @@
 package com.sayurbox.config4live.client;
 
+import java.util.Objects;
+
 public class HttpResponse {
 
     private Boolean success;
@@ -29,4 +31,14 @@ public class HttpResponse {
     public void setData(ConfigurationResponse data) {
         this.data = data;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof HttpResponse)) return false;
+        HttpResponse that = (HttpResponse) o;
+        return Objects.equals(success, that.success) && Objects.equals(error, that.error) &&
+                Objects.equals(data, that.data);
+    }
+
 }

@@ -15,7 +15,7 @@ Inspired from [https://github.com/cfg4j/cfg4j](https://github.com/cfg4j/cfg4j)
    - Avoid too many requests to config server
    - [Google Guava](https://github.com/google/guava/wiki/CachesExplained) cache 
  - HTTP connection
-   - will implement later.
+   - Http rest api connection
    
 ## gRPC proto file format
 ```$xslt
@@ -71,12 +71,34 @@ dependencies {
 }
 ```
 
-## Example
+## Example GRPC source
 
 Create source (grpc url is required, hystrx config is optional) and provider instance
 ```java
 ConfigurationSource source = new GrpcConfigurationSource.Builder()
                 .withGrpcUrl("localhost:5055")
+                .withHystrixExecutionTimeout(1000)
+                .withHystrixCircuitBreakerSleepWindow(500)
+                .withHystrixCircuitBreakerRequestVolumeThreshold(10)
+                .withHystrixRollingStatisticalWindow(500)
+                .withHystrixHealthSnapshotInterval(500)
+                .build();
+ConfigurationProvider provider = new ConfigurationProvider.Builder().withSource(source)
+                .withCache(true)
+                .withTimeToLive(10).build();
+
+// find configuration with default value
+String value = provider.bind("default_name", "Name default")
+System.out.println("value " + value);
+
+```
+
+## Example Http source
+
+Create source (http url is required, hystrx config is optional) and provider instance
+```java
+ConfigurationSource source = new HttpConfigurationSource.Builder()
+                .withUrl("http://localhost:8080")
                 .withHystrixExecutionTimeout(1000)
                 .withHystrixCircuitBreakerSleepWindow(500)
                 .withHystrixCircuitBreakerRequestVolumeThreshold(10)
