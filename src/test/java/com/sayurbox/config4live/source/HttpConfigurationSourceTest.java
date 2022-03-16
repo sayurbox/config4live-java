@@ -37,11 +37,13 @@ public class HttpConfigurationSourceTest {
         HttpUrl url = server.url("/v1/live-configuration/configuration?name=test");
         HttpConfigurationSource src = new HttpConfigurationSource.Builder()
                 .withUrl(baseMockServerUrl(url))
-                .withHystrixExecutionTimeout(1000)
-                .withHystrixCircuitBreakerSleepWindow(300)
-                .withHystrixCircuitBreakerRequestVolumeThreshold(10)
-                .withHystrixRollingStatisticalWindow(500)
-                .withHystrixHealthSnapshotInterval(500).build();
+                .withLoggerEnabled(false)
+                .withExecutionTimeout(1000)
+                .withCircuitBreakerEnabled(true)
+                .withCircuitBreakerFailureVolumeThreshold(10)
+                .withCircuitBreakerSlowResponseThreshold(1000)
+                .withCircuitBreakerWaitDurationOpenState(5000)
+                .build();
         Config actual = src.getProperty("test");
         Assert.assertNull(actual);
     }
@@ -58,11 +60,13 @@ public class HttpConfigurationSourceTest {
         HttpUrl url = server.url("/v1/live-configuration/configuration?name=test");
         HttpConfigurationSource src = new HttpConfigurationSource.Builder()
                 .withUrl(baseMockServerUrl(url))
-                .withHystrixExecutionTimeout(1000)
-                .withHystrixCircuitBreakerSleepWindow(300)
-                .withHystrixCircuitBreakerRequestVolumeThreshold(10)
-                .withHystrixRollingStatisticalWindow(500)
-                .withHystrixHealthSnapshotInterval(500).build();
+                .withLoggerEnabled(false)
+                .withExecutionTimeout(1000)
+                .withCircuitBreakerEnabled(true)
+                .withCircuitBreakerFailureVolumeThreshold(10)
+                .withCircuitBreakerSlowResponseThreshold(1000)
+                .withCircuitBreakerWaitDurationOpenState(5000)
+                .build();
         Config actual = src.getProperty("test");
         Assert.assertNotNull(actual);
         Assert.assertEquals("test_name", actual.getName());

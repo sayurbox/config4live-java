@@ -1,9 +1,9 @@
 package com.sayurbox.config4live.source;
 
 import com.sayurbox.config4live.Config;
-import com.sayurbox.config4live.ConfigRequest;
-import com.sayurbox.config4live.ConfigResponse;
-import com.sayurbox.config4live.LiveConfigurationGrpc;
+import com.sayurbox.shared.proto.consliveconfig.ConfigRequest;
+import com.sayurbox.shared.proto.consliveconfig.ConfigResponse;
+import com.sayurbox.shared.proto.consliveconfig.LiveConfigurationGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.inprocess.InProcessChannelBuilder;
@@ -55,12 +55,15 @@ public class GrpcConfigurationSourceTest {
 
     @Test
     public void getProperty_NotFound() {
-        GrpcConfigurationSource src = new GrpcConfigurationSource.Builder().withGrpcUrl(serverName)
-                .withHystrixExecutionTimeout(1000)
-                .withHystrixCircuitBreakerSleepWindow(300)
-                .withHystrixCircuitBreakerRequestVolumeThreshold(10)
-                .withHystrixRollingStatisticalWindow(500)
-                .withHystrixHealthSnapshotInterval(500).build();
+        GrpcConfigurationSource src = new GrpcConfigurationSource.Builder()
+                .withUrl(serverName)
+                .withLoggerEnabled(false)
+                .withExecutionTimeout(1000)
+                .withCircuitBreakerEnabled(true)
+                .withCircuitBreakerFailureVolumeThreshold(10)
+                .withCircuitBreakerSlowResponseThreshold(1000)
+                .withCircuitBreakerWaitDurationOpenState(300)
+                .build();
         Whitebox.setInternalState(src, "liveConfigStub", liveConfigStub);
         Config actual = src.getProperty("unknown");
         Assert.assertNull(actual);
@@ -68,12 +71,15 @@ public class GrpcConfigurationSourceTest {
 
     @Test
     public void getProperty_Found() {
-        GrpcConfigurationSource src = new GrpcConfigurationSource.Builder().withGrpcUrl(serverName)
-                .withHystrixExecutionTimeout(1000)
-                .withHystrixCircuitBreakerSleepWindow(300)
-                .withHystrixCircuitBreakerRequestVolumeThreshold(10)
-                .withHystrixRollingStatisticalWindow(500)
-                .withHystrixHealthSnapshotInterval(500).build();
+        GrpcConfigurationSource src = new GrpcConfigurationSource.Builder()
+                .withUrl(serverName)
+                .withLoggerEnabled(false)
+                .withExecutionTimeout(1000)
+                .withCircuitBreakerEnabled(true)
+                .withCircuitBreakerFailureVolumeThreshold(10)
+                .withCircuitBreakerSlowResponseThreshold(1000)
+                .withCircuitBreakerWaitDurationOpenState(300)
+                .build();
 
         Whitebox.setInternalState(src, "liveConfigStub", liveConfigStub);
         Config actual = src.getProperty("active_config");
