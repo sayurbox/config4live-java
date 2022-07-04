@@ -1,12 +1,10 @@
 syntax = "proto3";
 
-option go_package = "github.com/sayurbox/monobox/shared/proto/consliveconfig";
-
 option java_multiple_files = true;
 option java_outer_classname = "LiveConfigurationProto";
 option objc_class_prefix = "HLW";
 
-package com.sayurbox.shared.proto.consliveconfig;
+package com.sayurbox.config4live;
 
 service LiveConfiguration {
   // Find config by name

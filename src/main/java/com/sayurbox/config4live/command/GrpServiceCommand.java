@@ -1,10 +1,10 @@
 package com.sayurbox.config4live.command;
 
 import com.sayurbox.config4live.Config;
+import com.sayurbox.config4live.ConfigRequest;
+import com.sayurbox.config4live.ConfigResponse;
 import com.sayurbox.config4live.FormatType;
-import com.sayurbox.shared.proto.consliveconfig.ConfigRequest;
-import com.sayurbox.shared.proto.consliveconfig.ConfigResponse;
-import com.sayurbox.shared.proto.consliveconfig.LiveConfigurationGrpc;
+import com.sayurbox.config4live.LiveConfigurationGrpc;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;

@@ -4,10 +4,12 @@ import com.sayurbox.config4live.Config;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.decorators.Decorators;
+import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 public abstract class ServiceCommandV2<T> {
@@ -33,11 +35,14 @@ public abstract class ServiceCommandV2<T> {
         if (!this.isCircuitBreakerEnabled) {
             return parseResponse(supplier.get());
         }
+        List<Class<? extends Throwable>> errors = new ArrayList<>();
+        errors.add(CallNotPermittedException.class);
+        errors.add(StatusRuntimeException.class);
         Decorators.DecorateSupplier<T> decorated = Decorators
                 .ofSupplier(supplier)
                 .withCircuitBreaker(this.circuitBreaker)
-                .withFallback(Collections.singletonList(CallNotPermittedException.class), e -> {
-                    logger.warn("execute fallback CallNotPermittedException");
+                .withFallback(errors, e -> {
+                    logger.warn("execute fallback CallNotPermittedException {}", e.getMessage());
                     return getFallback();
                 });
         Supplier<T> decorator = decorated.decorate();

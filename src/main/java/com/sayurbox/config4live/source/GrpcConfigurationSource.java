@@ -1,9 +1,9 @@
 package com.sayurbox.config4live.source;
 
 import com.sayurbox.config4live.Config;
+import com.sayurbox.config4live.LiveConfigurationGrpc;
 import com.sayurbox.config4live.command.GrpServiceCommand;
 import com.sayurbox.config4live.param.CircuitBreakerParams;
-import com.sayurbox.shared.proto.consliveconfig.LiveConfigurationGrpc;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -24,7 +24,7 @@ public class GrpcConfigurationSource implements ConfigurationSource {
 
     private final LiveConfigurationGrpc.LiveConfigurationBlockingStub liveConfigStub;
     private final ManagedChannel channel;
-    private CircuitBreakerParams circuitBreakerParams;
+    private final CircuitBreakerParams circuitBreakerParams;
     private final long executionTimeout;
     private final CircuitBreaker circuitBreaker;
 

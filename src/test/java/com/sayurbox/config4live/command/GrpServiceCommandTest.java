@@ -1,15 +1,27 @@
 package com.sayurbox.config4live.command;
 
-import com.sayurbox.config4live.param.HystrixParams;
-import com.sayurbox.shared.proto.consliveconfig.LiveConfigurationGrpc;
+import com.sayurbox.config4live.Config;
+import com.sayurbox.config4live.ConfigRequest;
+import com.sayurbox.config4live.ConfigResponse;
+import com.sayurbox.config4live.LiveConfigurationGrpc;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.stub.StreamObserver;
 import io.grpc.testing.GrpcCleanupRule;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.Test;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.util.concurrent.TimeoutException;
 
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
@@ -24,11 +36,12 @@ public class GrpServiceCommandTest {
     private GrpServiceCommand command;
     private LiveConfigurationGrpc.LiveConfigurationBlockingStub liveConfigStub;
 
+
     @Before
     public void before() {
         serverName = InProcessServerBuilder.generateName();
     }
-/*
+
     @Test
     public void getConfig_Found() throws Exception {
         prepareMessageChannel(serverName, new LiveConfigurationGrpc.LiveConfigurationImplBase() {
@@ -40,9 +53,10 @@ public class GrpServiceCommandTest {
                 responseObserver.onCompleted();
             }
         });
-
-        command = new GrpServiceCommand(liveConfigStub, "default_wh", provideHystrixParam());
-        Config actual = command.run();
+        CircuitBreaker circuitBreaker = provideCircuitBreaker(30);
+        command = new GrpServiceCommand(liveConfigStub, "default_wh",
+                circuitBreaker, true, 30_000);
+        Config actual = command.execute();
         Assert.assertNotNull(actual);
         Assert.assertEquals("resultValue", actual.getValue());
         Assert.assertEquals("result", actual.getName());
@@ -57,8 +71,10 @@ public class GrpServiceCommandTest {
                 responseObserver.onError(Status.NOT_FOUND.withDescription("not found").asRuntimeException());
             }
         });
-        command = new GrpServiceCommand(liveConfigStub, "default_wh", provideHystrixParam());
-        Config actual = command.run();
+        CircuitBreaker circuitBreaker = provideCircuitBreaker(30);
+        command = new GrpServiceCommand(liveConfigStub, "default_wh",
+                circuitBreaker, true, 30_000);
+        Config actual = command.execute();
         Assert.assertNull(actual);
     }
 
@@ -70,9 +86,10 @@ public class GrpServiceCommandTest {
                 throw new RuntimeException("unknown exception");
             }
         });
-        HystrixParams hystrixParams = new HystrixParams(1000, 400, 10, 500, 500);
-        command = new GrpServiceCommand(liveConfigStub, "default_wh", hystrixParams);
-        Config actual = command.run();
+        CircuitBreaker circuitBreaker = provideCircuitBreaker(30);
+        command = new GrpServiceCommand(liveConfigStub, "default_wh",
+                circuitBreaker, true, 30_000);
+        Config actual = command.execute();
         Assert.assertNull(actual);
     }
 
@@ -82,7 +99,7 @@ public class GrpServiceCommandTest {
             @Override
             public void findConfig(ConfigRequest request, StreamObserver<ConfigResponse> responseObserver) {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(2_000);
                 } catch (InterruptedException e) {
                     responseObserver.onError(Status.UNKNOWN.withCause(e).asRuntimeException());
                 }
@@ -93,12 +110,73 @@ public class GrpServiceCommandTest {
             }
         });
 
-        HystrixParams hystrixParams = new HystrixParams(400, 400, 10, 500, 500);
-        command = new GrpServiceCommand(liveConfigStub, "default_wh", hystrixParams);
+        CircuitBreaker circuitBreaker = provideCircuitBreaker(500);
+        command = new GrpServiceCommand(liveConfigStub, "default_wh",
+                circuitBreaker, true, 1_000);
         Config actual = command.execute();
         Assert.assertNull(actual);
     }
-*/
+
+    @Test
+    public void getConfig_CircuitOpen_AfterSlidingWindowThreshold() throws Exception {
+        prepareMessageChannel(serverName, new LiveConfigurationGrpc.LiveConfigurationImplBase() {
+            @Override
+            public void findConfig(ConfigRequest request, StreamObserver<ConfigResponse> responseObserver) {
+                try {
+                    Thread.sleep(2_000);
+                } catch (InterruptedException e) {
+                    responseObserver.onError(Status.UNKNOWN.withCause(e).asRuntimeException());
+                }
+                ConfigResponse rs = ConfigResponse.newBuilder().setName("result").setValue("resultValue")
+                        .setFormat(ConfigResponse.Format.text).setDescription("desc").build();
+                responseObserver.onNext(rs);
+                responseObserver.onCompleted();
+            }
+        });
+
+        CircuitBreaker circuitBreaker = provideCircuitBreaker(500);
+        command = new GrpServiceCommand(liveConfigStub, "default_wh",
+                circuitBreaker, true, 1_000);
+        Assert.assertEquals(CircuitBreaker.State.CLOSED, circuitBreaker.getState());
+        Config actual = command.execute();
+        Assert.assertNull(actual);
+        Assert.assertEquals(CircuitBreaker.State.OPEN, circuitBreaker.getState());
+        GrpServiceCommand command2nd = new GrpServiceCommand(liveConfigStub, "default_wh",
+                circuitBreaker, true, 1_000);
+        Config actual2nd = command2nd.execute();
+        Assert.assertNull(actual2nd);
+    }
+
+    @Test
+    public void getConfig_CircuitBreaker_disabled() throws Exception {
+        prepareMessageChannel(serverName, new LiveConfigurationGrpc.LiveConfigurationImplBase() {
+            @Override
+            public void findConfig(ConfigRequest request, StreamObserver<ConfigResponse> responseObserver) {
+                try {
+                    Thread.sleep(2_000);
+                } catch (InterruptedException e) {
+                    responseObserver.onError(Status.UNKNOWN.withCause(e).asRuntimeException());
+                }
+                ConfigResponse rs = ConfigResponse.newBuilder().setName("result").setValue("resultValue")
+                        .setFormat(ConfigResponse.Format.text).setDescription("desc").build();
+                responseObserver.onNext(rs);
+                responseObserver.onCompleted();
+            }
+        });
+
+        CircuitBreaker circuitBreaker = provideCircuitBreaker(500);
+        command = new GrpServiceCommand(liveConfigStub, "default_wh",
+                circuitBreaker, false, 1_000);
+        Assert.assertEquals(CircuitBreaker.State.CLOSED, circuitBreaker.getState());
+        Config actual = command.execute();
+        Assert.assertNull(actual);
+        Assert.assertEquals(CircuitBreaker.State.CLOSED, circuitBreaker.getState());
+        GrpServiceCommand command2nd = new GrpServiceCommand(liveConfigStub, "default_wh",
+                circuitBreaker, true, 1_000);
+        Config actual2nd = command2nd.execute();
+        Assert.assertNull(actual2nd);
+    }
+
     private void prepareMessageChannel(String serverName, LiveConfigurationGrpc.LiveConfigurationImplBase stub)
             throws IOException {
         LiveConfigurationGrpc.LiveConfigurationImplBase serviceImpl =
@@ -110,7 +188,20 @@ public class GrpServiceCommandTest {
         liveConfigStub = LiveConfigurationGrpc.newBlockingStub(channel);
     }
 
-    private HystrixParams provideHystrixParam() {
-        return new HystrixParams(1000, 400, 10, 500, 500);
+    private CircuitBreaker provideCircuitBreaker(long slowCallDuration) {
+        CircuitBreakerConfig circuitBreakerConfig = CircuitBreakerConfig.custom()
+                .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED)
+                .slidingWindowSize(1)
+                .slowCallRateThreshold(70.0f)
+                .slowCallDurationThreshold(Duration.ofMillis(slowCallDuration))
+                .waitDurationInOpenState(Duration.ofSeconds(15))
+                .recordExceptions(IOException.class, TimeoutException.class,
+                        StatusRuntimeException.class)
+                .build();
+
+        CircuitBreakerRegistry circuitBreakerRegistry =
+                CircuitBreakerRegistry.of(circuitBreakerConfig);
+        return circuitBreakerRegistry.circuitBreaker("test");
     }
+
 }

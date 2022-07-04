@@ -1,9 +1,9 @@
 package com.sayurbox.config4live.source;
 
 import com.sayurbox.config4live.Config;
-import com.sayurbox.shared.proto.consliveconfig.ConfigRequest;
-import com.sayurbox.shared.proto.consliveconfig.ConfigResponse;
-import com.sayurbox.shared.proto.consliveconfig.LiveConfigurationGrpc;
+import com.sayurbox.config4live.ConfigRequest;
+import com.sayurbox.config4live.ConfigResponse;
+import com.sayurbox.config4live.LiveConfigurationGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.inprocess.InProcessChannelBuilder;
