@@ -1,11 +1,10 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "com.sayurbox.config4live";
 option java_outer_classname = "LiveConfigurationProto";
 option objc_class_prefix = "HLW";
 
-package config4live;
+package com.sayurbox.config4live;
 
 service LiveConfiguration {
   // Find config by name
@@ -22,11 +21,11 @@ message ConfigResponse {
   string value = 3;
   string description = 4;
   enum Format {
-      text = 0;
-      number = 1;
-      bool = 2;
-      json = 3;
-    }
+    text = 0;
+    number = 1;
+    bool = 2;
+    json = 3;
+  }
   Format format = 5;
   string owner = 6;
 }

@@ -5,7 +5,7 @@ import com.sayurbox.config4live.Config;
 import com.sayurbox.config4live.FormatType;
 import com.sayurbox.config4live.client.ConfigurationResponse;
 import com.sayurbox.config4live.client.HttpResponse;
-import com.sayurbox.config4live.param.HystrixParams;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -16,7 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-public class HttpServiceCommand extends ServiceCommand<ConfigurationResponse> {
+public class HttpServiceCommand extends ServiceCommandV2<ConfigurationResponse> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpServiceCommand.class);
 
@@ -24,9 +24,12 @@ public class HttpServiceCommand extends ServiceCommand<ConfigurationResponse> {
     private final String url;
     private final Gson gson;
 
-    public HttpServiceCommand(OkHttpClient okHttpClient, String url,
-                              String configKey, HystrixParams params) {
-        super(configKey, params);
+    public HttpServiceCommand(OkHttpClient okHttpClient,
+                              String url,
+                              String configKey,
+                              CircuitBreaker circuitBreaker,
+                              boolean isCircuitBreakerEnabled) {
+        super(circuitBreaker, isCircuitBreakerEnabled, configKey);
         this.url = url;
         this.okHttpClient = okHttpClient;
         this.gson = new Gson();
@@ -35,11 +38,14 @@ public class HttpServiceCommand extends ServiceCommand<ConfigurationResponse> {
     @Override
     protected ConfigurationResponse requestCommand(String param) {
         String url = String.format("%s/v1/live-configuration/configuration?name=%s",
-                this.url, encodeUrlParam(param));
-
-        Request request = new Request.Builder().get().url(url).build();
+                this.url, param);
         Response response = null;
+
         try {
+            Request request = new Request.Builder().get().url(url)
+                    .addHeader("Connection", "close")
+                    .build();
+
             LOGGER.debug("requesting live-config: {}", request.url());
             response = okHttpClient.newCall(request).execute();
             return handleResponse(response);
@@ -55,6 +61,9 @@ public class HttpServiceCommand extends ServiceCommand<ConfigurationResponse> {
 
     @Override
     protected Config parseResponse(ConfigurationResponse response) {
+        if (response == null) {
+            return null;
+        }
         Config config = new Config();
         config.setName(response.getName());
         config.setValue(response.getValue());
@@ -81,7 +90,7 @@ public class HttpServiceCommand extends ServiceCommand<ConfigurationResponse> {
     }
 
     @Override
-    protected Config getFallback() {
+    public ConfigurationResponse getFallback() {
         LOGGER.warn("http command {} fallback is executed", configKey);
         return null;
     }

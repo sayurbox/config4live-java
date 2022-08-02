@@ -55,12 +55,15 @@ public class GrpcConfigurationSourceTest {
 
     @Test
     public void getProperty_NotFound() {
-        GrpcConfigurationSource src = new GrpcConfigurationSource.Builder().withGrpcUrl(serverName)
-                .withHystrixExecutionTimeout(1000)
-                .withHystrixCircuitBreakerSleepWindow(300)
-                .withHystrixCircuitBreakerRequestVolumeThreshold(10)
-                .withHystrixRollingStatisticalWindow(500)
-                .withHystrixHealthSnapshotInterval(500).build();
+        GrpcConfigurationSource src = new GrpcConfigurationSource.Builder()
+                .withUrl(serverName)
+                .withLoggerEnabled(false)
+                .withExecutionTimeout(1000)
+                .withCircuitBreakerEnabled(true)
+                .withCircuitBreakerFailureVolumeThreshold(10)
+                .withCircuitBreakerSlowResponseThreshold(1000)
+                .withCircuitBreakerWaitDurationOpenState(300)
+                .build();
         Whitebox.setInternalState(src, "liveConfigStub", liveConfigStub);
         Config actual = src.getProperty("unknown");
         Assert.assertNull(actual);
@@ -68,12 +71,15 @@ public class GrpcConfigurationSourceTest {
 
     @Test
     public void getProperty_Found() {
-        GrpcConfigurationSource src = new GrpcConfigurationSource.Builder().withGrpcUrl(serverName)
-                .withHystrixExecutionTimeout(1000)
-                .withHystrixCircuitBreakerSleepWindow(300)
-                .withHystrixCircuitBreakerRequestVolumeThreshold(10)
-                .withHystrixRollingStatisticalWindow(500)
-                .withHystrixHealthSnapshotInterval(500).build();
+        GrpcConfigurationSource src = new GrpcConfigurationSource.Builder()
+                .withUrl(serverName)
+                .withLoggerEnabled(false)
+                .withExecutionTimeout(1000)
+                .withCircuitBreakerEnabled(true)
+                .withCircuitBreakerFailureVolumeThreshold(10)
+                .withCircuitBreakerSlowResponseThreshold(1000)
+                .withCircuitBreakerWaitDurationOpenState(300)
+                .build();
 
         Whitebox.setInternalState(src, "liveConfigStub", liveConfigStub);
         Config actual = src.getProperty("active_config");
