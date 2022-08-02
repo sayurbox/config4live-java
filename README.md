@@ -76,13 +76,13 @@ dependencies {
 Create source (grpc url is required, hystrx config is optional) and provider instance
 ```java
 ConfigurationSource source = new GrpcConfigurationSource.Builder()
-                .withGrpcUrl("localhost:5055")
-                .withHystrixExecutionTimeout(1000)
-                .withHystrixCircuitBreakerSleepWindow(500)
-                .withHystrixCircuitBreakerRequestVolumeThreshold(10)
-                .withHystrixRollingStatisticalWindow(500)
-                .withHystrixHealthSnapshotInterval(500)
-                .build();
+                 .withGrpcUrl("localhost:5055")
+                 .withCircuitBreakerEnabled(true)
+                 .withExecutionTimeout(5000)
+                 .withCircuitBreakerFailureVolumeThreshold(10)
+                 .withCircuitBreakerWaitDurationOpenState(15)
+                 .withCircuitBreakerSlowResponseThreshold(2000)
+                 .build();
 ConfigurationProvider provider = new ConfigurationProvider.Builder().withSource(source)
                 .withCache(true)
                 .withTimeToLive(10).build();
@@ -99,11 +99,11 @@ Create source (http url is required, hystrx config is optional) and provider ins
 ```java
 ConfigurationSource source = new HttpConfigurationSource.Builder()
                 .withUrl("http://localhost:8080")
-                .withHystrixExecutionTimeout(1000)
-                .withHystrixCircuitBreakerSleepWindow(500)
-                .withHystrixCircuitBreakerRequestVolumeThreshold(10)
-                .withHystrixRollingStatisticalWindow(500)
-                .withHystrixHealthSnapshotInterval(500)
+                .withCircuitBreakerEnabled(true)
+                .withExecutionTimeout(5000)
+                .withCircuitBreakerFailureVolumeThreshold(10)
+                .withCircuitBreakerWaitDurationOpenState(15)
+                .withCircuitBreakerSlowResponseThreshold(2000)
                 .build();
 ConfigurationProvider provider = new ConfigurationProvider.Builder().withSource(source)
                 .withCache(true)
