@@ -17,7 +17,7 @@ public class End2EndTest {
         ConfigurationProvider provider = new ConfigurationProvider.Builder()
                 .withSource(src)
                 .build();
-        String value = provider.bind("order_email_sender_", "none");
+        String value = provider.bind("order_email_sender", "none");
         System.out.println("value " + value);
     }
 
